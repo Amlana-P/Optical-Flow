@@ -30,25 +30,28 @@ old_points = np.array([[]])
 
 # Create a mask image for drawing purposes
 mask = np.zeros_like(old_gray)
-
+new_points_list = []
+old_points_list = []
 while True:
     _, frame = cap.read()
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     if point_selected is True:
         cv2.circle(frame, point, 5, (0, 0, 255), 2)
         new_points, status, error = cv2.calcOpticalFlowPyrLK(old_gray, gray_frame, old_points, None, **lk_params)
-        # Select good points
-        a, b = new_points.ravel()
-        c, d = old_points.ravel()
-        print(a, b, c, d)
-
-        frame = cv2.line(frame, (a, b), (c, d), color, 2)
-        frame = cv2.circle(frame, (a, b), 5, color, -1)
-        cv2.imshow('Frame', frame)
+        new_points_list.append(new_points)
+        old_points_list.append(old_points)
+        for i, (new, old) in enumerate(zip(new_points_list, old_points_list)):
+            a, b = new.ravel()
+            c, d = old.ravel()
+            print(a, b, c, d)
+            frame1 = cv2.line(frame, (a, b), (c, d), (255, 0, 0), 2)
+        frame2 = cv2.circle(frame, (a, b), 5, color, -1)
+        img = cv2.add(frame1, frame2)
+        cv2.imshow('Frame', img)
         old_gray = gray_frame.copy()
         old_points = new_points.reshape(-1, 1, 2)
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(1) & 0xff
     if key == 27:
         break
 cap.release()
